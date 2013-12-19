@@ -7,11 +7,11 @@ class RMU {
     /**
      * API URL
      */
-    const API_URL = 'http://regmyudid.com/API/v1/';
+    const API_URL = 'https://regmyudid.com/API/v1/';
     /**
      * WEBSITE URL
      */
-    const WEBSITE_URL = 'http://regmyudid.com/';
+    const WEBSITE_URL = 'https://regmyudid.com/';
 
     /**
      * @var Client ID
