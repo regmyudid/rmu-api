@@ -1,13 +1,15 @@
 <?php
+
 /**
  * RegMyUDID.com API class
  */
-
 class RMU {
+
     /**
      * API URL
      */
     const API_URL = 'https://regmyudid.com/API/v1/';
+
     /**
      * WEBSITE URL
      */
@@ -16,6 +18,7 @@ class RMU {
     /**
      * @var Client ID
      */
+
     /**
      * @var Client's API password
      */
@@ -26,14 +29,15 @@ class RMU {
      * @param $CLIENT_ID Client ID
      * @param $API_PASSWORD Client API password
      */
-    function __construct($CLIENT_ID,$API_PASSWORD) {
+    function __construct($CLIENT_ID, $API_PASSWORD) {
         $this->CLIENT_ID = $CLIENT_ID;
         $this->API_PASSWORD = $API_PASSWORD;
 
 
-        $valid = $this->api_query(array('mode'=>'auth'));
+        $valid = $this->api_query(array('mode' => 'auth'));
 
-        if (!$valid||!$valid['auth']) die('Unable to connect to RegMyUDID API. Check credentials or service status.');
+        if (!$valid || !$valid['auth'])
+            die('Unable to connect to RegMyUDID API. Check credentials or service status.');
     }
 
     /**
@@ -45,9 +49,10 @@ class RMU {
 
         $params['client_id'] = $this->CLIENT_ID;
         $params['api_password'] = $this->API_PASSWORD;
-        $query = $this::API_URL.'?'.http_build_query($params);
+        $query = $this::API_URL . '?' . http_build_query($params);
 
-        return json_decode(@file_get_contents($query),true);
+        $result = @file_get_contents($query);
+        return json_decode($result, true);
     }
 
     /**
@@ -55,8 +60,13 @@ class RMU {
      * @param $udid UDID or EMAIL to check
      * @return array Array of UDIDs for this emails. See more on RMU API DOCS
      */
-    function get_status($udid) {
-        $response = $this->api_query(array('mode'=>'status','udid'=>$udid));
+    function get_status($udid, $added = 0) {
+        $query['mode'] = 'status';
+        $query['udid'] = $udid;
+        if ($added) {
+            $query['added'] = $added;
+        }
+        $response = $this->api_query($query);
 
         return $response;
     }
@@ -67,7 +77,7 @@ class RMU {
      * @return string Full URL
      */
     function get_rmu_link($path) {
-        return $this::WEBSITE_URL.$path;
+        return $this::WEBSITE_URL . $path;
     }
 
     /**
@@ -76,7 +86,7 @@ class RMU {
      * @return bool true on success, false on fail
      */
     static function validate_udid($udid) {
-        return (preg_match('#([a-z0-9+]{40})#s', $udid)&&!preg_match('/fffff/',$udid));
+        return (preg_match('#([a-z0-9+]{40})#s', $udid) && !preg_match('/fffff/', $udid));
     }
 
     /**
@@ -87,18 +97,22 @@ class RMU {
      * @param $transaction_id Transaction ID in your payment system
      * @return array response from RMU servers or emulated local response.
      */
-    function register_udid($email,$udid,$type,$transaction_id) {
-        if (!$this->validate_udid($udid)) return array('success'=>false,'error'=>'Invalid UDID');
-        if (!filter_var($email,FILTER_VALIDATE_EMAIL)) return array('success'=>false,'error'=>'Invalid email');
-        if (!in_array($type,array('CERT','REG'))) return array('success'=>false,'error'=>'Invalid registration type');
-        $params = array('email'=>$email,'udid'=>$udid,'type'=>$type,'transaction_id'=>$transaction_id,'mode'=>'register');
+    function register_udid($email, $udid, $type, $transaction_id) {
+        if (!$this->validate_udid($udid))
+            return array('success' => false, 'error' => 'Invalid UDID');
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+            return array('success' => false, 'error' => 'Invalid email');
+        if (!in_array($type, array('CERT', 'REG')))
+            return array('success' => false, 'error' => 'Invalid registration type');
+        $params = array('email' => $email, 'udid' => $udid, 'type' => $type, 'transaction_id' => $transaction_id, 'mode' => 'register');
 
         $result = $this->api_query($params);
 
-        if ($result['error']) return array('success'=>false,'error'=>$result['error']);
+        if ($result['error'])
+            return array('success' => false, 'error' => $result['error']);
 
 
         return ($result['data']);
     }
+
 }
-?>
