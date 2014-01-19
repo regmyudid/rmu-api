@@ -45,14 +45,69 @@ class RMU {
      * @param $params Array of parameters
      * @return array Response array
      */
-    private function api_query($params) {
+    function api_query($params) {
 
         $params['client_id'] = $this->CLIENT_ID;
         $params['api_password'] = $this->API_PASSWORD;
         $query = $this::API_URL . '?' . http_build_query($params);
 
         $result = @file_get_contents($query);
+        //var_dump($result);
         return json_decode($result, true);
+    }
+
+    /**
+     * Gets API information associated with account
+     * @return array Array of information 
+     */
+    function get_api_info() {
+        $response = $this->api_query(array('mode' => 'api_info'));
+
+        if ($response['error']) {
+            return false;
+        }
+        return ($response['data']);
+    }
+
+    /**
+     * Sets API info to account
+     * @param array Associative array of information to be set
+     * @return boolean True on success or false on failed
+     */
+    function set_api_info($info) {
+        $response = $this->api_query(array('mode' => 'set_api_info', 'data' => $info));
+
+        if ($response['error']) {
+            return false;
+        }
+        return ($response['data']);
+    }
+
+    /**
+     * Gets statistics of account
+     * @return array Array of statistics
+     */
+    function get_statistics() {
+        $response = $this->api_query(array('mode' => 'statistics'));
+
+        if ($response['error']) {
+            return false;
+        }
+        return ($response['data']);
+    }
+
+    /**
+     * Deletes UDID from RMU database, only for failed REGs/CERTs
+     * @param string $key Delete key
+     * @return boolean True on success, false on failure.
+     */
+    function delete_udid($key) {
+        $response = $this->api_query(array('mode' => 'delete', 'delete_key' => $key));
+
+        if ($response['error']) {
+            return false;
+        }
+        return ($response['data']);
     }
 
     /**
@@ -60,15 +115,24 @@ class RMU {
      * @param $udid UDID or EMAIL to check
      * @return array Array of UDIDs for this emails. See more on RMU API DOCS
      */
-    function get_status($udid, $added = 0) {
+    function get_status($udid = '', $txid = '', $added = 0) {
         $query['mode'] = 'status';
-        $query['udid'] = $udid;
+        if ($udid) {
+            $query['udid'] = $udid;
+        }
+
+        if ($txid) {
+            $query['transaction_id'] = $txid;
+        }
         if ($added) {
             $query['added'] = $added;
         }
         $response = $this->api_query($query);
 
-        return $response;
+        if ($response['error']) {
+            return false;
+        }
+        return ($response['data']);
     }
 
     /**
@@ -76,8 +140,8 @@ class RMU {
      * @param $path Path on RMU servers
      * @return string Full URL
      */
-    function get_rmu_link($path) {
-        return $this::WEBSITE_URL . $path;
+    static function get_rmu_link($path) {
+        return RMU::WEBSITE_URL . $path;
     }
 
     /**
@@ -106,13 +170,12 @@ class RMU {
             return array('success' => false, 'error' => 'Invalid registration type');
         $params = array('email' => $email, 'udid' => $udid, 'type' => $type, 'transaction_id' => $transaction_id, 'mode' => 'register');
 
-        $result = $this->api_query($params);
+        $response = $this->api_query($params);
 
-        if ($result['error'])
-            return array('success' => false, 'error' => $result['error']);
-
-
-        return ($result['data']);
+        if ($response['error']) {
+            return array('success' => false, 'error' => $response['error']);
+        }
+        return ($response['data']);
     }
 
 }
