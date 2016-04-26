@@ -1,19 +1,19 @@
 <?php
 
 /**
- * RegMyUDID.com API class
+ * regmyudid.cc API class
  */
 class RMU {
 
     /**
      * API URL
      */
-    const API_URL = 'https://regmyudid.com/API/v1/';
+    const API_URL = 'https://secure.regmyudid.ru/API/v2.0/';
 
     /**
      * WEBSITE URL
      */
-    const WEBSITE_URL = 'https://regmyudid.com/';
+    const WEBSITE_URL = 'https://regmyudid.cc/';
 
     /**
      * @var Client ID
@@ -32,22 +32,23 @@ class RMU {
     function __construct($CLIENT_ID, $API_PASSWORD) {
         $this->CLIENT_ID = $CLIENT_ID;
         $this->API_PASSWORD = $API_PASSWORD;
-
+        $this->_fail = false;
 
         $valid = $this->api_query(array('mode' => 'auth'));
 
-        if (!$valid || !$valid['auth'])
-            die('Unable to connect to RegMyUDID API. Check credentials or service status.');
+        if (!$valid || !$valid['auth']) {
+            $this->_fail = true;
+        }
     }
 
     /**
-     * Preforms API query to regmyudid.com
+     * Preforms API query to regmyudid.cc
      * @param $params Array of parameters
      * @return array Response array
      */
     function api_query($params) {
 
-        $params['client_id'] = $this->CLIENT_ID;
+        $params['api_client_id'] = $this->CLIENT_ID;
         $params['api_password'] = $this->API_PASSWORD;
         $query = $this::API_URL . '?' . http_build_query($params);
 
@@ -58,7 +59,7 @@ class RMU {
 
     /**
      * Gets API information associated with account
-     * @return array Array of information 
+     * @return array Array of information
      */
     function get_api_info() {
         $response = $this->api_query(array('mode' => 'api_info'));
@@ -115,7 +116,7 @@ class RMU {
      * @param $udid UDID or EMAIL to check
      * @return array Array of UDIDs for this emails. See more on RMU API DOCS
      */
-    function get_status($udid = '', $txid = '', $added = 0) {
+    function get_status($udid = '', $txid = '', $added = 0, $start = 0, $limit = 10) {
         $query['mode'] = 'status';
         if ($udid) {
             $query['udid'] = $udid;
@@ -127,7 +128,13 @@ class RMU {
         if ($added) {
             $query['added'] = $added;
         }
+
+
+        $query['start'] = $start;
+        $query['limit'] = $limit;
         $response = $this->api_query($query);
+
+        //var_dump($query);
 
         if ($response['error']) {
             return false;
