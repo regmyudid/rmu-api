@@ -157,7 +157,7 @@ class RMU {
      * @return bool true on success, false on fail
      */
     static function validate_udid($udid) {
-        return (preg_match('#^([a-z0-9+]{40})$#s', $udid) && !preg_match('/fffff/', $udid));
+        return (preg_match('/^([a-z0-9\-+]{25,40})$/si', $udid) && !preg_match('/fffff/', $udid));
     }
 
     /**
