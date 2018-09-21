@@ -8,7 +8,7 @@ class RMU {
     /**
      * API URL
      */
-    const API_URL = 'https://secure.regmyudid.ru/API/v2.0/';
+    const API_URL = 'https://secure.regmyudid.cc/API/v2.0/';
 
     /**
      * WEBSITE URL
